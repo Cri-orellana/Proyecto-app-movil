@@ -99,7 +99,7 @@ fun FormularioScreen(
         Button(
             onClick = {
                 if (viewModel.validacionForm()){
-                    navController.navigate("Resumen")
+                    navController.navigate("Perfil")
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -111,11 +111,3 @@ fun FormularioScreen(
     }
 }
 
-/*@Composable
-fun PerfilScreen(viewModel: UsuarioViewModel){
-    val estado by viewModel.estado.collectAsState()
-
-    Column { Modifier.padding(16.dp) }{
-
-    }
-}*/
