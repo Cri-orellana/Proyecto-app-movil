@@ -19,7 +19,14 @@ import com.tcg_project.view.FormularioScreen
 import com.tcg_project.viewmodel.UsuarioViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.tcg_project.view.AppScreen
+import com.tcg_project.view.CarritoScreen
+import com.tcg_project.view.ContactoScreen
+import com.tcg_project.view.InicioScreen
+import com.tcg_project.view.LoginScreen
+import com.tcg_project.view.NosotrosScreen
 import com.tcg_project.view.PerfilScreen
+import com.tcg_project.view.ProductosScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -29,16 +36,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val usuarioViewModel : UsuarioViewModel = viewModel()
-            NavHost(navController = navController, startDestination = "FormularioScreen") {
-                composable("FormularioScreen") {
-                    FormularioScreen(
-                        navController, usuarioViewModel
-                    )
+            NavHost(navController = navController, startDestination = AppScreen.Inicio.route) {
+                composable(AppScreen.Inicio.route) {
+                    InicioScreen(navController)
+                }
+                composable(AppScreen.Nosotros.route) {
+                    NosotrosScreen()
+                }
+                composable(AppScreen.Contacto.route) {
+                    ContactoScreen()
+                }
+                composable(AppScreen.Login.route) {
+                    LoginScreen(navController)
+                }
+                composable(AppScreen.Registro.route) {
+                    FormularioScreen(navController, usuarioViewModel)
+                }
+                composable(AppScreen.Productos.route) {
+                    ProductosScreen()
+                }
+                composable(AppScreen.Carrito.route) {
+                    CarritoScreen()
                 }
                 composable("Perfil") {
-                    PerfilScreen(
-                        usuarioViewModel
-                    )
+                    PerfilScreen(usuarioViewModel)
                 }
             }
 
