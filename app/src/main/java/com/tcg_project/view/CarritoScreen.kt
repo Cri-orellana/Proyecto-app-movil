@@ -1,9 +1,16 @@
-package com.tcg_project.model
+package com.tcg_project.view
 
-data class Producto(
-    val id: Int,
-    val nombre: String,
-    val precio: Double,
-    val franquicia: String,
-    val imagenUrl: String
-)
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun CarritoScreen() {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Carrito de Compras")
+    }
+}
