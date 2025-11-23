@@ -1,9 +1,11 @@
 package com.tcg_project.model
 
-import androidx.annotation.DrawableRes
-
 data class Producto(
+    val id: Long,
     val nombre: String,
     val precio: Double,
-    @DrawableRes val idImagen: Int
+    val franquicia: String,
+    val tipo: String,
+    val descripcion: String,
+    val urlImagen: String
 )
