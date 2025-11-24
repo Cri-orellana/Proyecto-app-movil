@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.tcg_project.viewmodel.UsuarioViewModel
@@ -30,7 +32,6 @@ fun FormularioScreen(
 ){
     val state by viewModel.state.collectAsState()
 
-    // Si el usuario se loguea (tras el registro), lo saca de esta pantalla.
     LaunchedEffect(state.loggedInUser) {
         if (state.loggedInUser != null) {
             navController.navigate(PantallaApp.Perfil.ruta) {
@@ -43,6 +44,8 @@ fun FormularioScreen(
         Modifier.fillMaxSize().padding(16.dp),
         Arrangement.spacedBy(12.dp)
     ){
+        Text("Crear Cuenta", style = MaterialTheme.typography.headlineMedium)
+
         OutlinedTextField(
             value = state.formEmail,
             onValueChange = viewModel::onEmailChange,
@@ -64,20 +67,12 @@ fun FormularioScreen(
         OutlinedTextField(
             value = state.formName,
             onValueChange = viewModel::onNameChange,
-            label = { Text("Nombre") },
+            label = { Text("Nombre de Usuario") },
             isError = state.formErrors.nombre != null,
             supportingText = { state.formErrors.nombre?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
-            value = state.formAddress,
-            onValueChange = viewModel::onAddressChange,
-            label = { Text("Direccion") },
-            isError = state.formErrors.direccion != null,
-            supportingText = { state.formErrors.direccion?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-        )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
@@ -85,14 +80,23 @@ fun FormularioScreen(
                 onCheckedChange = viewModel::onTermsAcceptedChange
             )
             Spacer(Modifier.width(8.dp))
-            Text("Acepto los terminos y condiciones")
+            Text("Acepto los términos y condiciones")
         }
 
-        Button(
-            onClick = { viewModel.register() },
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text("Registrar")
+        state.formErrors.errorLogin?.let {
+            Text(it, color = Color.Red)
+        }
+
+        if (state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else {
+            Button(
+                onClick = { viewModel.register() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.formTermsAccepted
+            ){
+                Text("Registrar")
+            }
         }
     }
 }

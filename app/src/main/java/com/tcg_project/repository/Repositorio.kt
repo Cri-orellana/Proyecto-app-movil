@@ -21,6 +21,10 @@ class Repositorio {
         return api.eliminarTicket(id)
     }
 
+    suspend fun crearUsuario(usuario: UsuarioApi): Response<UsuarioApi> {
+        return api.crearUsuario(usuario)
+    }
+
     suspend fun obtenerUsuarios(): Response<List<UsuarioApi>> {
         return api.obtenerTodosLosUsuarios()
     }

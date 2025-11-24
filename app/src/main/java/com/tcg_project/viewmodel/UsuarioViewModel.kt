@@ -6,47 +6,42 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tcg_project.SQLite
-import com.tcg_project.Usuario
+import com.tcg_project.model.UsuarioApi
 import com.tcg_project.model.UsuarioErrores
+import com.tcg_project.repository.Repositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// 1. Se define el ESTADO ÚNICO Y CENTRALIZADO
 data class UserScreenState(
-    val loggedInUser: Usuario? = null, // El usuario que ha iniciado sesión
+    val loggedInUser: UsuarioApi? = null,
     val formEmail: String = "",
     val formPassword: String = "",
     val formName: String = "",
-    val formAddress: String = "",
     val formTermsAccepted: Boolean = false,
-    val formErrors: UsuarioErrores = UsuarioErrores()
+    val formErrors: UsuarioErrores = UsuarioErrores(),
+    val isLoading: Boolean = false
 )
 
 class UsuarioViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = application.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-    private val dbHelper = SQLite.getInstance(application)
+    private val repositorio = Repositorio()
 
-    // 2. Se crea el StateFlow para el ESTADO ÚNICO
     private val _state = MutableStateFlow(UserScreenState())
     val state: StateFlow<UserScreenState> = _state.asStateFlow()
 
     init {
-        // 3. Se restaura la sesión al iniciar el ViewModel
         viewModelScope.launch {
-            val userEmail = prefs.getString("LOGGED_IN_USER_EMAIL", null)
-            if (userEmail != null) {
-                val user = dbHelper.getUsuarioPorEmail(userEmail)
-                _state.update { it.copy(loggedInUser = user) }
+            val savedEmail = prefs.getString("LOGGED_IN_USER_EMAIL", null)
+            if (savedEmail != null) {
+                verificarSesionRemota(savedEmail)
             }
         }
     }
 
-    // --- ACCIONES --- (Todas modifican el estado único)
 
     fun onEmailChange(valor: String) {
         _state.update { it.copy(formEmail = valor, formErrors = it.formErrors.copy(email = null, errorLogin = null)) }
@@ -60,74 +55,120 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
         _state.update { it.copy(formName = valor, formErrors = it.formErrors.copy(nombre = null)) }
     }
 
-    fun onAddressChange(valor: String) {
-        _state.update { it.copy(formAddress = valor, formErrors = it.formErrors.copy(direccion = null)) }
-    }
-
     fun onTermsAcceptedChange(valor: Boolean) {
         _state.update { it.copy(formTermsAccepted = valor) }
     }
 
-    fun login(): Boolean {
+
+    private suspend fun verificarSesionRemota(email: String) {
+        try {
+            val respuesta = repositorio.obtenerUsuarios()
+            if (respuesta.isSuccessful) {
+                val usuarioEncontrado = respuesta.body()?.find { it.correo == email }
+                if (usuarioEncontrado != null) {
+                    _state.update { it.copy(loggedInUser = usuarioEncontrado) }
+                }
+            }
+        } catch (e: Exception) {
+        }
+    }
+
+    fun login() {
         val currentState = _state.value
         if (currentState.formEmail.isBlank() || currentState.formPassword.isBlank()) {
-            _state.update { it.copy(formErrors = it.formErrors.copy(errorLogin = "El email y la contraseña no pueden estar vacíos.")) }
-            return false
+            _state.update { it.copy(formErrors = it.formErrors.copy(errorLogin = "Campos vacíos")) }
+            return
         }
 
-        val loginSuccessful = dbHelper.loginUsuario(currentState.formEmail, currentState.formPassword)
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val respuesta = repositorio.obtenerUsuarios()
 
-        return if (loginSuccessful) {
-            val user = dbHelper.getUsuarioPorEmail(currentState.formEmail)
-            prefs.edit().putString("LOGGED_IN_USER_EMAIL", user?.email).apply()
-            _state.update { it.copy(
-                loggedInUser = user,
-                formEmail = "",
-                formPassword = "",
-                formErrors = UsuarioErrores()
-            )}
-            true
-        } else {
-            _state.update { it.copy(formErrors = it.formErrors.copy(errorLogin = "Usuario o contraseña incorrectos.")) }
-            false
+                if (respuesta.isSuccessful) {
+                    val listaUsuarios = respuesta.body() ?: emptyList()
+
+                    val usuarioEncontrado = listaUsuarios.find {
+                        it.correo == currentState.formEmail && it.password == currentState.formPassword
+                    }
+
+                    if (usuarioEncontrado != null) {
+                        prefs.edit().putString("LOGGED_IN_USER_EMAIL", usuarioEncontrado.correo).apply()
+                        _state.update { it.copy(
+                            loggedInUser = usuarioEncontrado,
+                            formEmail = "",
+                            formPassword = "",
+                            formErrors = UsuarioErrores(),
+                            isLoading = false
+                        )}
+                    } else {
+                        _state.update { it.copy(
+                            isLoading = false,
+                            formErrors = it.formErrors.copy(errorLogin = "Credenciales incorrectas")
+                        )}
+                    }
+                } else {
+                    _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "Error servidor: ${respuesta.code()}")) }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "Sin conexión")) }
+            }
+        }
+    }
+
+    fun register() {
+        if (!validateRegistrationForm()) return
+
+        val currentState = _state.value
+
+        val nuevoUsuario = UsuarioApi(
+            id = null,
+            usuarioNombre = currentState.formName,
+            correo = currentState.formEmail,
+            password = currentState.formPassword,
+            terminos = currentState.formTermsAccepted
+        )
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val respuesta = repositorio.crearUsuario(nuevoUsuario)
+
+                if (respuesta.isSuccessful && respuesta.body() != null) {
+                    val usuarioCreado = respuesta.body()!!
+                    prefs.edit().putString("LOGGED_IN_USER_EMAIL", usuarioCreado.correo).apply()
+
+                    _state.update { it.copy(
+                        loggedInUser = usuarioCreado,
+                        formEmail = "",
+                        formPassword = "",
+                        formName = "",
+                        formTermsAccepted = false,
+                        formErrors = UsuarioErrores(),
+                        isLoading = false
+                    )}
+                } else {
+                    _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "No se pudo registrar")) }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "Error de conexión")) }
+            }
         }
     }
 
     fun logout() {
         prefs.edit().remove("LOGGED_IN_USER_EMAIL").apply()
-        _state.update { UserScreenState() } // Resetea todo el estado a su valor inicial
-    }
-
-    fun register(): Boolean {
-        if (!validateRegistrationForm()) return false
-        
-        val currentState = _state.value
-        dbHelper.registrarUsuario(currentState.formName, currentState.formEmail, currentState.formPassword, currentState.formAddress)
-
-        val user = dbHelper.getUsuarioPorEmail(currentState.formEmail)
-        prefs.edit().putString("LOGGED_IN_USER_EMAIL", user?.email).apply()
-        
-        _state.update { it.copy(
-            loggedInUser = user,
-            formEmail = "",
-            formPassword = "",
-            formName = "",
-            formAddress = "",
-            formTermsAccepted = false,
-            formErrors = UsuarioErrores()
-        )}
-        return true
+        _state.update { UserScreenState() }
     }
 
     private fun validateRegistrationForm(): Boolean {
         val currentState = _state.value
         val errors = UsuarioErrores(
-            email = if (!currentState.formEmail.contains("@") || currentState.formEmail.length < 12) "Formato de correo inválido" else null,
-            password = if (currentState.formPassword.length < 6) "La contraseña debe tener al menos 6 caracteres" else null,
-            nombre = if (currentState.formName.isBlank()) "Debe llenar este campo" else null,
-            direccion = if (currentState.formAddress.isBlank()) "Debe llenar este campo" else null
+            email = if (!currentState.formEmail.contains("@")) "Correo inválido" else null,
+            password = if (currentState.formPassword.length < 4) "Mínimo 4 caracteres" else null,
+            nombre = if (currentState.formName.isBlank()) "Requerido" else null
         )
-        val hasErrors = listOfNotNull(errors.email, errors.password, errors.nombre, errors.direccion).isNotEmpty()
+        val hasErrors = listOfNotNull(errors.email, errors.password, errors.nombre).isNotEmpty()
         _state.update { it.copy(formErrors = errors) }
         return !hasErrors
     }
@@ -138,7 +179,7 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
                 @Suppress("UNCHECKED_CAST")
                 return UsuarioViewModel(app) as T
             }
-            throw IllegalArgumentException("Unable to construct viewmodel")
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }
