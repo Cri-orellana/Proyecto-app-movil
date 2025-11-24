@@ -25,21 +25,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
+import com.tcg_project.R
 import com.tcg_project.viewmodel.CarritoViewModel
 import com.tcg_project.viewmodel.ProductoViewModel
 
 @Composable
-fun LoadImageFromUrl(url: String, imageLoader: ImageLoader, modifier: Modifier = Modifier) {
+fun LoadImageFromUrl(url: String?, imageLoader: ImageLoader, modifier: Modifier = Modifier) {
+    val painter = rememberAsyncImagePainter(
+        model = url ?: "",
+        imageLoader = imageLoader,
+        error = painterResource(R.drawable.tcg_logo),
+        placeholder = painterResource(R.drawable.tcg_logo)
+    )
+
     Image(
-        painter = rememberAsyncImagePainter(url, imageLoader),
+        painter = painter,
         contentDescription = null,
         modifier = modifier,
-        contentScale = ContentScale.Crop
+        contentScale = ContentScale.Fit
     )
 }
 
@@ -51,7 +60,6 @@ fun ProductosScreen(
     navController: NavController,
     franquicia: String?
 ) {
-    // Le dice al ViewModel que filtre la lista solo cuando el argumento cambia
     LaunchedEffect(franquicia) {
         productoViewModel.selectFranchise(franquicia)
     }
@@ -60,50 +68,81 @@ fun ProductosScreen(
     val franchises by productoViewModel.franchises.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Fila de Filtros
+
         LazyRow(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                Button(onClick = { navController.navigate(PantallaApp.Productos.sinFiltro()) }) {
+                Button(onClick = { navController.navigate(PantallaApp.Productos.ruta) }) {
                     Text("Todos")
                 }
             }
             items(franchises) { franchise ->
-                Button(onClick = { navController.navigate(PantallaApp.Productos.conFranquicia(franchise)) }) {
+                Button(onClick = {
+                    navController.navigate("productos?franquicia=$franchise")
+                }) {
                     Text(franchise)
                 }
             }
         }
 
-        // Lista de Productos
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(productos) { producto ->
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+
                         LoadImageFromUrl(
-                            url = producto.url,
+                            url = producto.urlImagen,
                             imageLoader = imageLoader,
-                            modifier = Modifier.size(150.dp)
+                            modifier = Modifier
+                                .size(200.dp)
+                                .fillMaxWidth()
                         )
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = producto.descripcion, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+
+                        Text(
+                            text = producto.nombreProduto,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = "${producto.franquicia} - ${producto.tipo}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = producto.franquicia, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "$${producto.precio}", style = MaterialTheme.typography.bodyMedium)
+
+                        Text(
+                            text = producto.descripcion,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
                         Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "$ ${producto.precio}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         Button(onClick = {
                             if (carritoViewModel != null) {
-                                carritoViewModel.agregarAlCarrito(producto.id)
+                                carritoViewModel.agregarAlCarrito(producto.productId ?: 0L)
                             } else {
                                 navController.navigate(PantallaApp.Login.ruta)
                             }

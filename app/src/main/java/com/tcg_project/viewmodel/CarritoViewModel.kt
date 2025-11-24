@@ -1,86 +1,95 @@
 package com.tcg_project.viewmodel
 
 import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tcg_project.CarritoItem
-import com.tcg_project.Producto
-import com.tcg_project.SQLite
+// IMPORTANTE: Usamos el nuevo modelo ProductoApi
+import com.tcg_project.model.ProductoApi
+import com.tcg_project.repository.Repositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class CarritoProducto(val producto: Producto, val cantidad: Int)
-data class CartState(val items: List<CarritoProducto> = emptyList(), val total: Double = 0.0)
+data class CarritoProducto(
+    val producto: ProductoApi,
+    var cantidad: Int
+)
 
-class CarritoViewModel(application: Application, private val usuarioEmail: String) : ViewModel() {
+data class CartState(
+    val items: List<CarritoProducto> = emptyList(),
+    val total: Double = 0.0
+)
 
-    private val dbHelper = SQLite.getInstance(application)
+class CarritoViewModel(application: Application, private val usuarioEmail: String) : AndroidViewModel(application) {
+
+    private val repositorio = Repositorio()
 
     private val _cartState = MutableStateFlow(CartState())
     val cartState = _cartState.asStateFlow()
 
-    private var allProducts: List<Producto> = emptyList()
+    private var allProducts: List<ProductoApi> = emptyList()
+
+    private val carritoLocal = mutableListOf<CarritoProducto>()
 
     init {
         viewModelScope.launch {
-            allProducts = dbHelper.getProductos()
-            refreshCart()
-        }
-    }
-
-    private fun refreshCart() {
-        viewModelScope.launch {
-            val cartItems = dbHelper.obtenerItemsDelCarrito(usuarioEmail)
-            val enrichedItems = cartItems.mapNotNull { cartItem ->
-                allProducts.find { it.id == cartItem.productoId }?.let {
-                    CarritoProducto(it, cartItem.cantidad)
+            try {
+                val respuesta = repositorio.obtenerProductos()
+                if (respuesta.isSuccessful) {
+                    allProducts = respuesta.body() ?: emptyList()
                 }
+            } catch (e: Exception) {
             }
-            val total = enrichedItems.sumOf { it.producto.precio * it.cantidad.toDouble() }
-            _cartState.value = CartState(items = enrichedItems, total = total)
         }
     }
 
-    fun agregarAlCarrito(productoId: String) {
-        viewModelScope.launch {
-            val existingItem = dbHelper.obtenerItemsDelCarrito(usuarioEmail).find { it.productoId == productoId }
-            if (existingItem != null) {
-                existingItem.cantidad++
-                dbHelper.agregarAlCarrito(existingItem)
+    private fun recalcularCarrito() {
+        val total = carritoLocal.sumOf { it.producto.precio * it.cantidad.toDouble() }
+        _cartState.update {
+            it.copy(items = carritoLocal.toList(), total = total)
+        }
+    }
+
+    fun agregarAlCarrito(productoId: Long) {
+        val itemExistente = carritoLocal.find { it.producto.productId == productoId }
+
+        if (itemExistente != null) {
+            itemExistente.cantidad++
+        } else {
+            val productoReal = allProducts.find { it.productId == productoId }
+
+            if (productoReal != null) {
+                carritoLocal.add(CarritoProducto(productoReal, 1))
+            }
+        }
+        recalcularCarrito()
+    }
+
+    fun eliminarDelCarrito(productoId: Long) {
+        val item = carritoLocal.find { it.producto.productId == productoId }
+        if (item != null) {
+            carritoLocal.remove(item)
+            recalcularCarrito()
+        }
+    }
+
+    fun incrementarCantidad(productoId: Long) {
+        agregarAlCarrito(productoId)
+    }
+
+    fun decrementarCantidad(productoId: Long) {
+        val itemExistente = carritoLocal.find { it.producto.productId == productoId }
+
+        if (itemExistente != null) {
+            if (itemExistente.cantidad > 1) {
+                itemExistente.cantidad--
             } else {
-                val newItem = CarritoItem(productoId, usuarioEmail, 1)
-                dbHelper.agregarAlCarrito(newItem)
+                carritoLocal.remove(itemExistente)
             }
-            refreshCart()
-        }
-    }
-
-    fun eliminarDelCarrito(productoId: String) {
-        viewModelScope.launch {
-            dbHelper.eliminarItemDelCarrito(productoId, usuarioEmail)
-            refreshCart()
-        }
-    }
-
-    fun incrementarCantidad(productoId: String) {
-        agregarAlCarrito(productoId) // La lógica es la misma
-    }
-
-    fun decrementarCantidad(productoId: String) {
-        viewModelScope.launch {
-            val existingItem = dbHelper.obtenerItemsDelCarrito(usuarioEmail).find { it.productoId == productoId }
-            if (existingItem != null) {
-                if (existingItem.cantidad > 1) {
-                    existingItem.cantidad--
-                    dbHelper.agregarAlCarrito(existingItem)
-                } else {
-                    dbHelper.eliminarItemDelCarrito(productoId, usuarioEmail)
-                }
-            }
-            refreshCart()
+            recalcularCarrito()
         }
     }
 

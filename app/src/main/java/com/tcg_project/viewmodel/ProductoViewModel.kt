@@ -1,11 +1,12 @@
 package com.tcg_project.viewmodel
 
 import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tcg_project.Producto
-import com.tcg_project.SQLite
+import com.tcg_project.model.ProductoApi
+import com.tcg_project.repository.Repositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,14 +15,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ProductoViewModel(application: Application) : ViewModel() {
+class ProductoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val dbHelper = SQLite.getInstance(application)
+    private val repositorio = Repositorio()
 
-    private val _allProductos = MutableStateFlow<List<Producto>>(emptyList())
+    private val _allProductos = MutableStateFlow<List<ProductoApi>>(emptyList())
     private val _selectedFranchise = MutableStateFlow<String?>(null)
 
-    private val _productosDestacados = MutableStateFlow<List<Producto>>(emptyList())
+    private val _productosDestacados = MutableStateFlow<List<ProductoApi>>(emptyList())
     val productosDestacados = _productosDestacados.asStateFlow()
 
     val selectedFranchise = _selectedFranchise.asStateFlow()
@@ -30,7 +31,7 @@ class ProductoViewModel(application: Application) : ViewModel() {
         productos.map { it.franquicia }.distinct()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val productos: StateFlow<List<Producto>> = combine(_allProductos, _selectedFranchise) { productos, selectedFranchise ->
+    val productos: StateFlow<List<ProductoApi>> = combine(_allProductos, _selectedFranchise) { productos, selectedFranchise ->
         if (selectedFranchise == null) {
             productos
         } else {
@@ -39,9 +40,24 @@ class ProductoViewModel(application: Application) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        cargarProductosDesdeApi()
+    }
+
+    private fun cargarProductosDesdeApi() {
         viewModelScope.launch {
-            _allProductos.value = dbHelper.getProductos()
-            _productosDestacados.value = dbHelper.getArticulosDestacados()
+            try {
+                val respuesta = repositorio.obtenerProductos()
+
+                if (respuesta.isSuccessful) {
+                    val listaRemota = respuesta.body() ?: emptyList()
+                    _allProductos.value = listaRemota
+                    _productosDestacados.value = listaRemota.take(5)
+                } else {
+                    println("Error al obtener productos: ${respuesta.code()}")
+                }
+            } catch (e: Exception) {
+                println("Error de conexión: ${e.message}")
+            }
         }
     }
 

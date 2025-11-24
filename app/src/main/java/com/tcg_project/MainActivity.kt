@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
             val userState by usuarioViewModel.state.collectAsState()
             val carritoViewModel: CarritoViewModel? = userState.loggedInUser?.let { user ->
-                viewModel(key = user.email, factory = CarritoViewModel.Factory(app, user.email))
+                viewModel(key = user.correo, factory = CarritoViewModel.Factory(app, user.correo))
             }
 
             Scaffold(

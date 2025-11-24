@@ -21,17 +21,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.tcg_project.viewmodel.ViewModelLogin // Asegúrate de importar tu ViewModel correcto
+import com.tcg_project.viewmodel.UsuarioViewModel
 
 @Composable
 fun LoginScreen(
     controladorNavegacion: NavController,
-    viewModel: ViewModelLogin
+    viewModel: UsuarioViewModel
 ) {
-    val state by viewModel.estadoUi.collectAsState()
+    val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(state.loginExitoso) {
-        if (state.loginExitoso) {
+    LaunchedEffect(state.loggedInUser) {
+        if (state.loggedInUser != null) {
             controladorNavegacion.navigate(PantallaApp.Perfil.ruta) {
                 popUpTo(PantallaApp.Inicio.ruta)
             }
@@ -46,31 +46,30 @@ fun LoginScreen(
     ) {
         Text("Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
 
-        // CAMPO EMAIL
         OutlinedTextField(
-            value = state.email,
-            onValueChange = { nuevoTexto -> viewModel.cambioEmail(nuevoTexto) },
+            value = state.formEmail,
+            onValueChange = viewModel::onEmailChange,
             label = { Text("Email") },
-            isError = state.errores.email != null,
+            isError = state.formErrors.email != null,
             supportingText = {
-                state.errores.email?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                state.formErrors.email?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            value = state.password,
-            onValueChange = { nuevoTexto -> viewModel.cambioContrasena(nuevoTexto) },
+            value = state.formPassword,
+            onValueChange = viewModel::onPasswordChange,
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            isError = state.errores.password != null,
+            isError = state.formErrors.password != null,
             supportingText = {
-                state.errores.password?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                state.formErrors.password?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
-        state.errorGeneral?.let {
+        state.formErrors.errorLogin?.let {
             Spacer(Modifier.height(4.dp))
             Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 8.dp))
         }
