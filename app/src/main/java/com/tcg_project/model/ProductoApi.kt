@@ -1,7 +1,7 @@
-package com.tcg_project.data.model
+package com.tcg_project.model
 
 data class ProductoApi(
-    val productId: Long,
+    val productId: Long?,
     val franquicia: String,
     val tipo: String,
     val nombreProduto: String,

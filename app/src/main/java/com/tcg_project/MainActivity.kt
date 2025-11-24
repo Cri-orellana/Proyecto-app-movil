@@ -29,6 +29,7 @@ import com.tcg_project.view.PantallaApp
 import com.tcg_project.view.PantallaInicio
 import com.tcg_project.view.PerfilScreen
 import com.tcg_project.view.ProductosScreen
+import com.tcg_project.ui.view.TicketScreen
 import com.tcg_project.viewmodel.CarritoViewModel
 import com.tcg_project.viewmodel.ProductoViewModel
 import com.tcg_project.viewmodel.UsuarioViewModel
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
             val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModel.Factory(app))
             val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModel.Factory(app))
+
             val imageLoader = ImageLoader.Builder(context).build()
 
             val userState by usuarioViewModel.state.collectAsState()
@@ -62,9 +64,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     composable(PantallaApp.Inicio.ruta) { PantallaInicio(controladorNavegacion, productoViewModel, imageLoader) }
                     composable(PantallaApp.Nosotros.ruta) { NosotrosScreen() }
-                    composable(PantallaApp.Contacto.ruta) { ContactoScreen() }
+                    composable(PantallaApp.Contacto.ruta) { ContactoScreen(controladorNavegacion) }
                     composable(PantallaApp.Login.ruta) { LoginScreen(controladorNavegacion, usuarioViewModel) }
                     composable(PantallaApp.Registro.ruta) { FormularioScreen(controladorNavegacion, usuarioViewModel) }
+
                     composable(
                         route = PantallaApp.Productos.ruta,
                         arguments = listOf(navArgument("franquicia") { nullable = true })
@@ -72,10 +75,17 @@ class MainActivity : ComponentActivity() {
                         val franquicia = backStackEntry.arguments?.getString("franquicia")
                         ProductosScreen(productoViewModel, carritoViewModel, imageLoader, controladorNavegacion, franquicia)
                     }
+
                     composable(PantallaApp.Carrito.ruta) {
                         CarritoScreen(carritoViewModel, imageLoader)
                     }
+
                     composable(PantallaApp.Perfil.ruta) { PerfilScreen(usuarioViewModel, controladorNavegacion) }
+
+
+                    composable("tickets") {
+                        TicketScreen()
+                    }
                 }
             }
         }
