@@ -2,6 +2,7 @@ package com.tcg_project.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -151,7 +152,13 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
                     _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "No se pudo registrar")) }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "Error de conexión")) }
+                Log.e("ERROR_REAL", "--------------------------------------------------")
+                Log.e("ERROR_REAL", "CAUSA DEL FALLO: ${e.message}")
+                Log.e("ERROR_REAL", "TIPO DE ERROR: ${e.javaClass.simpleName}")
+                e.printStackTrace()
+                Log.e("ERROR_REAL", "--------------------------------------------------")
+
+                _state.update { it.copy(isLoading = false, formErrors = it.formErrors.copy(errorLogin = "Error: ${e.message}")) }
             }
         }
     }

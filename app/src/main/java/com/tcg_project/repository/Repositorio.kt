@@ -8,29 +8,31 @@ import retrofit2.Response
 
 class Repositorio {
 
-    private val api = ClienteRetrofit.servicioApi
+    private val apiTickets = ClienteRetrofit.ticketService
+    private val apiProductos = ClienteRetrofit.productoService
+    private val apiUsuarios = ClienteRetrofit.usuarioService
 
     suspend fun obtenerTickets(): Response<List<TicketApi>> {
-        return api.obtenerTodosLosTickets()
+        return apiTickets.obtenerTodosLosTickets()
     }
 
     suspend fun crearTicket(ticket: TicketApi): Response<TicketApi> {
-        return api.crearTicket(ticket)
-    }
-    suspend fun eliminarTicket(id: Int): Response<Void> {
-        return api.eliminarTicket(id)
+        return apiTickets.crearTicket(ticket)
     }
 
-    suspend fun crearUsuario(usuario: UsuarioApi): Response<UsuarioApi> {
-        return api.crearUsuario(usuario)
+    suspend fun eliminarTicket(id: Int): Response<Void> {
+        return apiTickets.eliminarTicket(id)
     }
 
     suspend fun obtenerUsuarios(): Response<List<UsuarioApi>> {
-        return api.obtenerTodosLosUsuarios()
+        return apiUsuarios.obtenerTodosLosUsuarios()
+    }
+
+    suspend fun crearUsuario(usuario: UsuarioApi): Response<UsuarioApi> {
+        return apiUsuarios.crearUsuario(usuario)
     }
 
     suspend fun obtenerProductos(): Response<List<ProductoApi>> {
-        return api.obtenerTodosLosProductos()
+        return apiProductos.obtenerTodosLosProductos()
     }
-
 }

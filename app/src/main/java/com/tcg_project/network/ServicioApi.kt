@@ -11,9 +11,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
-interface ServicioApi {
-
-    // --- TICKETS ---
+interface TicketService {
     @GET("/api/tickets")
     suspend fun obtenerTodosLosTickets(): Response<List<TicketApi>>
 
@@ -28,24 +26,9 @@ interface ServicioApi {
 
     @DELETE("/api/tickets/{ticket}")
     suspend fun eliminarTicket(@Path("ticket") id: Int): Response<Void>
+}
 
-    // --- USUARIOS ---
-    @GET("/api/usuarios")
-    suspend fun obtenerTodosLosUsuarios(): Response<List<UsuarioApi>>
-
-    @GET("/api/usuarios/{id}")
-    suspend fun obtenerUsuarioPorId(@Path("id") id: Int): Response<UsuarioApi>
-
-    @POST("/api/usuarios")
-    suspend fun crearUsuario(@Body usuario: UsuarioApi): Response<UsuarioApi>
-
-    @PUT("/api/usuarios/{id}")
-    suspend fun actualizarUsuario(@Path("id") id: Int, @Body usuario: UsuarioApi): Response<UsuarioApi>
-
-    @DELETE("/api/usuarios/{id}")
-    suspend fun eliminarUsuario(@Path("id") id: Int): Response<Void>
-
-    // --- PRODUCTOS ---
+interface ProductoService {
     @GET("/api/productos")
     suspend fun obtenerTodosLosProductos(): Response<List<ProductoApi>>
 
@@ -60,4 +43,21 @@ interface ServicioApi {
 
     @DELETE("/api/productos/{id}")
     suspend fun eliminarProducto(@Path("id") id: Long): Response<Void>
+}
+
+interface UsuarioService {
+    @GET("/api/usuarios")
+    suspend fun obtenerTodosLosUsuarios(): Response<List<UsuarioApi>>
+
+    @GET("/api/usuarios/{id}")
+    suspend fun obtenerUsuarioPorId(@Path("id") id: Int): Response<UsuarioApi>
+
+    @POST("/api/usuarios")
+    suspend fun crearUsuario(@Body usuario: UsuarioApi): Response<UsuarioApi>
+
+    @PUT("/api/usuarios/{id}")
+    suspend fun actualizarUsuario(@Path("id") id: Int, @Body usuario: UsuarioApi): Response<UsuarioApi>
+
+    @DELETE("/api/usuarios/{id}")
+    suspend fun eliminarUsuario(@Path("id") id: Int): Response<Void>
 }
