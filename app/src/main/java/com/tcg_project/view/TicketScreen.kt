@@ -1,16 +1,15 @@
-package com.tcg_project.ui.view
+package com.tcg_project.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,18 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tcg_project.model.TicketApi
 import com.tcg_project.viewmodel.TicketViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicketScreen(
+    navController: NavController,
     viewModel: TicketViewModel = viewModel()
 ) {
-    val listaTickets by viewModel.listaTickets.observeAsState(emptyList())
-    val cargando by viewModel.cargando.observeAsState(false)
-    val error by viewModel.mensajeError.observeAsState("")
-
+    val state by viewModel.uiState.collectAsState()
     var mostrarDialogo by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -39,73 +37,83 @@ fun TicketScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Tickets") },
-                actions = {
-                    IconButton(onClick = { viewModel.obtenerTickets() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Recargar")
+                title = { Text("Mis Tickets") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) { // Vuelve atrás
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { mostrarDialogo = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Crear Ticket")
+                Icon(Icons.Default.Add, contentDescription = "Nuevo Ticket")
             }
         }
-    ) { paddingValues ->
-
-        Box(
+    ) { padding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
+                .padding(16.dp)
         ) {
-            if (listaTickets.isEmpty() && !cargando) {
-                Text(
-                    text = "No hay tickets disponibles",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(listaTickets) { ticket ->
-                        TicketItem(
-                            ticket = ticket,
-                            onDelete = { id -> viewModel.eliminarTicket(id) }
-                        )
-                    }
+
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
 
-            if (cargando) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            state.error?.let { error ->
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Warning, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = error)
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = { viewModel.obtenerTickets() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Reintentar")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (error.isNotEmpty()) {
-                Text(
-                    text = error,
-                    color = Color.Red,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                        .background(Color.White)
-                )
+            if (state.tickets.isEmpty() && !state.isLoading) {
+                Text("No tienes tickets creados.", color = Color.Gray)
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(state.tickets) { ticket ->
+                        Card(elevation = CardDefaults.cardElevation(2.dp)) {
+                            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                                Text(
+                                    text = ticket.asunto ?: "Sin Asunto",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                )
+                                Text(
+                                    text = ticket.descripcion ?: "",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Estado: ${ticket.estado ?: "ABIERTO"}",
+                                    color = if (ticket.estado == "CERRADO") Color.Red else Color.Green,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     if (mostrarDialogo) {
-        DialogoNuevoTicket(
+        DialogoCrearTicket(
             onDismiss = { mostrarDialogo = false },
-            onConfirm = { nombre, asunto, email, desc ->
+            onConfirm = { asunto, desc, nombre, email ->
                 val nuevoTicket = TicketApi(
-                    id = null,
                     nombre = nombre,
                     email = email,
                     asunto = asunto,
@@ -120,64 +128,30 @@ fun TicketScreen(
 }
 
 @Composable
-fun TicketItem(ticket: TicketApi, onDelete: (Int) -> Unit) {
-    Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = ticket.asunto, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text(text = "De: ${ticket.nombre} (${ticket.email})", fontSize = 14.sp, color = Color.Gray)
-                Text(text = ticket.descripcion, maxLines = 2, fontSize = 14.sp)
-                Text(
-                    text = "Estado: ${ticket.estado}",
-                    color = if (ticket.estado == "ABIERTO") Color.Green else Color.Blue,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp
-                )
-            }
-            IconButton(onClick = { ticket.id?.let { onDelete(it) } }) {
-                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
-            }
-        }
-    }
-}
-
-
-@Composable
-fun DialogoNuevoTicket(onDismiss: () -> Unit, onConfirm: (String, String, String, String) -> Unit) {
-    var nombre by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+fun DialogoCrearTicket(onDismiss: () -> Unit, onConfirm: (String, String, String, String) -> Unit) {
     var asunto by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Nuevo Ticket") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
-                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+                OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Tu Nombre") })
+                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Tu Correo") })
                 OutlinedTextField(value = asunto, onValueChange = { asunto = it }, label = { Text("Asunto") })
                 OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") })
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(nombre, asunto, email, descripcion) }) {
-                Text("Crear")
+            Button(onClick = { onConfirm(asunto, descripcion, nombre, email) }) {
+                Text("Enviar")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         }
     )
 }

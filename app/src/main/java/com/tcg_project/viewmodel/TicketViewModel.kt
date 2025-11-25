@@ -1,79 +1,64 @@
 package com.tcg_project.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tcg_project.model.TicketApi
 import com.tcg_project.repository.Repositorio
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class TicketUiState(
+    val tickets: List<TicketApi> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 class TicketViewModel : ViewModel() {
 
     private val repositorio = Repositorio()
 
-    private val _listaTickets = MutableLiveData<List<TicketApi>>()
-    val listaTickets: LiveData<List<TicketApi>> = _listaTickets
-
-    private val _cargando = MutableLiveData<Boolean>()
-    val cargando: LiveData<Boolean> = _cargando
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError: LiveData<String> = _mensajeError
+    private val _uiState = MutableStateFlow(TicketUiState())
+    val uiState: StateFlow<TicketUiState> = _uiState.asStateFlow()
 
     fun obtenerTickets() {
         viewModelScope.launch {
-            _cargando.value = true
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val respuesta = repositorio.obtenerTickets()
                 if (respuesta.isSuccessful) {
-                    _listaTickets.value = respuesta.body()
+                    _uiState.update { it.copy(
+                        tickets = respuesta.body() ?: emptyList(),
+                        isLoading = false
+                    )}
                 } else {
-                    _mensajeError.value = "Error: ${respuesta.code()}"
+                    _uiState.update { it.copy(isLoading = false, error = "Error servidor: ${respuesta.code()}") }
                 }
             } catch (e: Exception) {
-                _mensajeError.value = "Fallo en la conexión: ${e.message}"
-            } finally {
-                _cargando.value = false
+                _uiState.update { it.copy(isLoading = false, error = "Error conexión: ${e.message}") }
             }
         }
     }
 
-    fun crearTicket(ticket: TicketApi) {
+    fun crearTicket(nuevoTicket: TicketApi) {
         viewModelScope.launch {
-            _cargando.value = true
+            _uiState.update { it.copy(isLoading = true) }
             try {
-                val respuesta = repositorio.crearTicket(ticket)
+                val respuesta = repositorio.crearTicket(nuevoTicket)
                 if (respuesta.isSuccessful) {
                     obtenerTickets()
                 } else {
-                    _mensajeError.value = "No se pudo crear el ticket"
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo crear el ticket") }
                 }
             } catch (e: Exception) {
-                _mensajeError.value = "Error al crear: ${e.message}"
-            } finally {
-                _cargando.value = false
+                _uiState.update { it.copy(isLoading = false, error = "Error al enviar: ${e.message}") }
             }
         }
     }
 
-    fun eliminarTicket(id: Int) {
-        viewModelScope.launch {
-            _cargando.value = true
-            try {
-                val respuesta =
-                    repositorio.eliminarTicket(id) // Necesitas agregar esto en Repositorio también
-                if (respuesta.isSuccessful) {
-                    // Recargar la lista después de borrar
-                    obtenerTickets()
-                } else {
-                    _mensajeError.value = "Error al eliminar: ${respuesta.code()}"
-                }
-            } catch (e: Exception) {
-                _mensajeError.value = "Error de conexión al eliminar"
-            } finally {
-                _cargando.value = false
-            }
-        }
+    fun limpiarError() {
+        _uiState.update { it.copy(error = null) }
     }
 }

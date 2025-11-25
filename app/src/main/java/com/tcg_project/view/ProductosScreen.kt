@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,15 +74,15 @@ fun ProductosScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                Button(onClick = { navController.navigate(PantallaApp.Productos.ruta) }) {
+                Button(onClick = { navController.navigate(PantallaApp.Productos.rutaSinFiltro) }) {
                     Text("Todos")
                 }
             }
             items(franchises) { franchise ->
                 Button(onClick = {
-                    navController.navigate("productos?franquicia=$franchise")
+                    navController.navigate(PantallaApp.Productos.conFranquicia(franchise))
                 }) {
-                    Text(franchise)
+                    Text(franchise.uppercase())
                 }
             }
         }

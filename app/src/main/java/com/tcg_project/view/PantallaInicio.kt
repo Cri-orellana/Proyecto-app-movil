@@ -35,8 +35,8 @@ fun LoadImageInicio(url: String?, imageLoader: ImageLoader, modifier: Modifier =
     val painter = rememberAsyncImagePainter(
         model = url ?: "",
         imageLoader = imageLoader,
-        error = painterResource(R.drawable.tcg_logo), // Imagen si falla
-        placeholder = painterResource(R.drawable.tcg_logo) // Imagen cargando
+        error = painterResource(R.drawable.tcg_logo),
+        placeholder = painterResource(R.drawable.tcg_logo)
     )
     Image(
         painter = painter,
@@ -79,7 +79,7 @@ fun PantallaInicio(
                 painter = painterResource(id = R.drawable.yugioh_logo),
                 contentDescription = "Yugioh",
                 modifier = Modifier.size(80.dp).clickable {
-                    navController.navigate(PantallaApp.Productos.conFranquicia("Yu-Gi-Oh!"))
+                    navController.navigate(PantallaApp.Productos.conFranquicia("yugioh"))
                 },
                 contentScale = ContentScale.Fit
             )
@@ -87,7 +87,7 @@ fun PantallaInicio(
                 painter = painterResource(id = R.drawable.magic_logo),
                 contentDescription = "Magic",
                 modifier = Modifier.size(80.dp).clickable {
-                    navController.navigate(PantallaApp.Productos.conFranquicia("Magic"))
+                    navController.navigate(PantallaApp.Productos.conFranquicia("magic"))
                 },
                 contentScale = ContentScale.Fit
             )
@@ -95,7 +95,7 @@ fun PantallaInicio(
                 painter = painterResource(id = R.drawable.pokemon_logo),
                 contentDescription = "Pokemon",
                 modifier = Modifier.size(80.dp).clickable {
-                    navController.navigate(PantallaApp.Productos.conFranquicia("Pokemon"))
+                    navController.navigate(PantallaApp.Productos.conFranquicia("pokemon"))
                 },
                 contentScale = ContentScale.Fit
             )
@@ -103,7 +103,7 @@ fun PantallaInicio(
                 painter = painterResource(id = R.drawable.mitos_logo),
                 contentDescription = "Mitos y Leyendas",
                 modifier = Modifier.size(80.dp).clickable {
-                    navController.navigate(PantallaApp.Productos.conFranquicia("Mitos y Leyendas"))
+                    navController.navigate(PantallaApp.Productos.conFranquicia("mitos"))
                 },
                 contentScale = ContentScale.Fit
             )
@@ -121,7 +121,8 @@ fun PantallaInicio(
                     productosDestacados.take(2).forEach { producto ->
                         Card(
                             modifier = Modifier.weight(1f).clickable {
-                                navController.navigate(PantallaApp.Productos.conFranquicia(producto.franquicia))
+                                val franquicia = producto.franquicia ?: "pokemon"
+                                navController.navigate(PantallaApp.Productos.conFranquicia(franquicia))
                             },
                             elevation = CardDefaults.cardElevation(4.dp)
                         ) {
@@ -145,7 +146,8 @@ fun PantallaInicio(
                     productosDestacados.drop(2).take(2).forEach { producto ->
                         Card(
                             modifier = Modifier.weight(1f).clickable {
-                                navController.navigate(PantallaApp.Productos.conFranquicia(producto.franquicia))
+                                val franquicia = producto.franquicia ?: "pokemon"
+                                navController.navigate(PantallaApp.Productos.conFranquicia(franquicia))
                             },
                             elevation = CardDefaults.cardElevation(4.dp)
                         ) {

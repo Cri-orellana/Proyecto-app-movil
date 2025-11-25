@@ -28,14 +28,14 @@ class ProductoViewModel(application: Application) : AndroidViewModel(application
     val selectedFranchise = _selectedFranchise.asStateFlow()
 
     val franchises: StateFlow<List<String>> = _allProductos.combine(_selectedFranchise) { productos, _ ->
-        productos.map { it.franquicia }.distinct()
+        productos.mapNotNull { it.franquicia }.distinct()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val productos: StateFlow<List<ProductoApi>> = combine(_allProductos, _selectedFranchise) { productos, selectedFranchise ->
         if (selectedFranchise == null) {
             productos
         } else {
-            productos.filter { it.franquicia == selectedFranchise }
+            productos.filter { it.franquicia?.equals(selectedFranchise, ignoreCase = true) == true }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

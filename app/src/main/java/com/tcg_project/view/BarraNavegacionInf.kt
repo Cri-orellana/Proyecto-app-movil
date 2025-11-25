@@ -14,67 +14,82 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.tcg_project.viewmodel.ProductoViewModel
 
 @Composable
-fun BarraNavegacionInferior(controladorNavegacion: NavController, productoViewModel: ProductoViewModel) {
-    val elementos = listOf(
+fun BarraNavegacionInferior(
+    navController: NavController,
+    productoViewModel: ProductoViewModel
+) {
+    val pantallas = listOf(
         PantallaApp.Inicio,
         PantallaApp.Productos,
-        PantallaApp.Login,
         PantallaApp.Carrito,
-        PantallaApp.Nosotros
+        PantallaApp.Perfil,
+        PantallaApp.Contacto
     )
 
-    NavigationBar(
-        containerColor = Color.Red
-    ) {
-        val pilaNavegacion by controladorNavegacion.currentBackStackEntryAsState()
-        val rutaActual = pilaNavegacion?.destination?.route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-        elementos.forEach { pantalla ->
-            val esRutaProductos = pantalla.ruta.startsWith("pantalla_productos")
-            val rutaDestino = if (esRutaProductos) PantallaApp.Productos.sinFiltro() else pantalla.ruta
+    val mostrarBarra = pantallas.any { pantalla ->
+        if (pantalla == PantallaApp.Productos) {
+            currentRoute?.startsWith("productos") == true
+        } else {
+            currentRoute == pantalla.ruta
+        }
+    }
 
-            NavigationBarItem(
-                icon = {
-                    pantalla.icono?.let {
-                        Icon(it, contentDescription = pantalla.titulo)
-                    }
-                },
-                label = {
-                    pantalla.titulo?.let {
-                        Text(it)
-                    }
-                },
-                selected = rutaActual == rutaDestino,
-                onClick = {
-                    // Lógica explícita para limpiar el filtro
-                    if (pantalla.ruta == PantallaApp.Inicio.ruta || esRutaProductos) {
-                        productoViewModel.selectFranchise(null)
-                    }
+    if (mostrarBarra) {
+        NavigationBar(
+            containerColor = Color.Red,
+            contentColor = Color.White
+        ) {
+            pantallas.forEach { pantalla ->
 
-                    controladorNavegacion.navigate(rutaDestino) {
-                        if (pantalla.ruta == PantallaApp.Inicio.ruta) {
-                            // Al ir a Inicio, se limpia toda la pila de navegación para un reinicio limpio.
-                            popUpTo(controladorNavegacion.graph.findStartDestination().id) {
-                                inclusive = true
-                            }
+                val selected = if (pantalla == PantallaApp.Productos) {
+                    currentRoute?.startsWith("productos") == true
+                } else {
+                    currentRoute == pantalla.ruta
+                }
+
+                NavigationBarItem(
+                    icon = {
+                        if (pantalla.icono != null) {
+                            Icon(imageVector = pantalla.icono, contentDescription = pantalla.titulo)
+                        }
+                    },
+                    label = {
+                        if (pantalla.titulo != null) {
+                            Text(pantalla.titulo)
+                        }
+                    },
+                    selected = selected,
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Red,
+                        selectedTextColor = Color.White,
+                        indicatorColor = Color.White,
+                        unselectedIconColor = Color.White.copy(alpha = 0.7f),
+                        unselectedTextColor = Color.White.copy(alpha = 0.7f)
+                    ),
+                    onClick = {
+                        val rutaDestino = if (pantalla == PantallaApp.Productos) {
+                            PantallaApp.Productos.rutaSinFiltro
                         } else {
-                            // Para otras pantallas, se guarda el estado para una navegación más fluida.
-                            popUpTo(controladorNavegacion.graph.findStartDestination().id) {
-                                saveState = true
+                            pantalla.ruta
+                        }
+
+                        navController.navigate(rutaDestino) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                if (pantalla != PantallaApp.Inicio) {
+                                    saveState = true
+                                }
+                            }
+                            launchSingleTop = true
+                            if (pantalla != PantallaApp.Inicio) {
+                                restoreState = true
                             }
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = Color.LightGray,
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = Color.LightGray,
-                    indicatorColor = Color.Red
                 )
-            )
+            }
         }
     }
 }
