@@ -26,21 +26,28 @@ class MonedaViewModel : ViewModel() {
         cargarCotizaciones()
     }
 
+// En MonedaViewModel.kt
+
+// En MonedaViewModel.kt
+
     fun cargarCotizaciones() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val respuesta = repositorio.obtenerDivisas("USD", "CLP,EUR")
+                val respuesta = repositorio.obtenerDivisas("USD", "EUR")
 
                 if (respuesta.isSuccessful && respuesta.body() != null) {
                     val tasas = respuesta.body()!!.tasas
+
+                    val valorEUR = tasas["EUR"] ?: 0.0
+
                     _uiState.update { it.copy(
                         isLoading = false,
-                        valorDolar = tasas["CLP"] ?: 0.0,
-                        valorEuro = tasas["EUR"] ?: 0.0
+                        valorDolar = 950.0,
+                        valorEuro = valorEUR,
                     )}
                 } else {
-                    _uiState.update { it.copy(isLoading = false, error = "Error API") }
+                    _uiState.update { it.copy(isLoading = false, error = "Error API: ${respuesta.code()}") }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
