@@ -26,10 +26,6 @@ class MonedaViewModel : ViewModel() {
         cargarCotizaciones()
     }
 
-// En MonedaViewModel.kt
-
-// En MonedaViewModel.kt
-
     fun cargarCotizaciones() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
