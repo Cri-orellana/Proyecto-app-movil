@@ -1,0 +1,110 @@
+package com.example.movil_tcg_app.view
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.movil_tcg_app.viewmodel.UsuarioViewModel
+
+@Composable
+fun PerfilScreen(
+    viewModel: UsuarioViewModel,
+    navController: NavController
+) {
+    val state by viewModel.state.collectAsState()
+    val usuario = state.loggedInUser
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (usuario != null) {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = null,
+                modifier = Modifier.size(100.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = usuario.usuarioNombre,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = usuario.correo,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { navController.navigate("tickets") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.List, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Mis Tickets de Soporte")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    viewModel.logout()
+                    navController.navigate(PantallaApp.Inicio.ruta) {
+                        popUpTo(0)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.ExitToApp, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Cerrar Sesión")
+            }
+
+            Button(onClick = { navController.navigate("divisas") }) {
+                Text("Ver Precio Dólar")
+            }
+
+        } else {
+            Text("No hay sesión activa")
+            Button(onClick = { navController.navigate(PantallaApp.Login.ruta) }) {
+                Text("Ir a Login")
+            }
+        }
+
+
+    }
+}

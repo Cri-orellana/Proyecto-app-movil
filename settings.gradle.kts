@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "tcg-project"
+rootProject.name = "Movil_Tcg_app"
 include(":app")
  
