@@ -1,76 +1,36 @@
 package com.example.movil_tcg_app.view
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Downloading
-import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.ImageLoader
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.example.movil_tcg_app.viewmodel.CarritoViewModel
 import com.example.movil_tcg_app.viewmodel.ProductoViewModel
 
 @Composable
 fun LoadImageFromUrl(url: String?, imageLoader: ImageLoader, modifier: Modifier = Modifier) {
-    val painter = rememberAsyncImagePainter(
+    AsyncImage(
         model = url ?: "",
-        imageLoader = imageLoader
+        imageLoader = imageLoader,
+        contentDescription = null,
+        modifier = modifier,
+        contentScale = ContentScale.Fit,
+        placeholder = rememberVectorPainter(Icons.Default.Image),
+        error = rememberVectorPainter(Icons.Default.BrokenImage)
     )
-
-    when (painter.state) {
-        is AsyncImagePainter.State.Loading -> {
-            Icon(
-                imageVector = Icons.Default.Downloading,
-                contentDescription = null,
-                modifier = modifier.padding(20.dp),
-                tint = Color.Gray
-            )
-        }
-        is AsyncImagePainter.State.Error -> {
-            Icon(
-                imageVector = Icons.Default.ImageNotSupported,
-                contentDescription = null,
-                modifier = modifier.padding(20.dp),
-                tint = Color.Red
-            )
-        }
-        else -> {
-            Image(
-                painter = painter,
-                contentDescription = null,
-                modifier = modifier,
-                contentScale = ContentScale.Fit
-            )
-        }
-    }
 }
 
 @Composable
@@ -114,7 +74,6 @@ fun ProductosScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(productos) { producto ->
-
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp)
