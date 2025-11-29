@@ -31,9 +31,9 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val app = context.applicationContext as Application
 
+            // ViewModels
             val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModel.Factory(app))
             val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModel.Factory(app))
-
             val monedaViewModel: MonedaViewModel = viewModel()
 
             val imageLoader = ImageLoader.Builder(context).build()
@@ -61,6 +61,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // --- PANTALLAS SIMPLES ---
                     composable(PantallaApp.Nosotros.ruta) { NosotrosScreen() }
                     composable(PantallaApp.Contacto.ruta) { ContactoScreen(controladorNavegacion) }
                     composable(PantallaApp.Login.ruta) { LoginScreen(controladorNavegacion, usuarioViewModel) }
@@ -77,13 +78,13 @@ class MainActivity : ComponentActivity() {
                         )
                     ) { backStackEntry ->
                         val franquicia = backStackEntry.arguments?.getString("franquicia")
+
                         ProductosScreen(
-                            productoViewModel,
-                            carritoViewModel,
-                            monedaViewModel, // <--- Conexión 2
-                            imageLoader,
-                            controladorNavegacion,
-                            franquicia
+                            productoViewModel = productoViewModel,
+                            carritoViewModel = carritoViewModel,
+                            imageLoader = imageLoader,
+                            navController = controladorNavegacion,
+                            franquicia = franquicia
                         )
                     }
 
@@ -93,17 +94,22 @@ class MainActivity : ComponentActivity() {
 
                     composable(PantallaApp.Perfil.ruta) {
                         PerfilScreen(
-                            usuarioViewModel,
-                            monedaViewModel, // <--- Conexión 3
-                            controladorNavegacion
+                            viewModel = usuarioViewModel,
+                            monedaViewModel = monedaViewModel,
+                            navController = controladorNavegacion
                         )
                     }
 
                     composable("tickets") {
-                        TicketScreen(navController = controladorNavegacion)
+                        TicketScreen(
+                            navController = controladorNavegacion,
+                            viewModel = viewModel()
+                        )
                     }
 
-                    composable("divisas") { DivisasScreen() }
+                    composable("divisas") {
+                        DivisasScreen(viewModel = monedaViewModel)
+                    }
                 }
             }
         }

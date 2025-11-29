@@ -22,7 +22,7 @@ fun DivisasScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Cotización del Dólar (USD)", style = MaterialTheme.typography.headlineSmall)
+        Text("Cotización de Divisas", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -37,12 +37,20 @@ fun DivisasScreen(
                 modifier = Modifier.fillMaxWidth().padding(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("1 USD =", style = MaterialTheme.typography.titleLarge)
+                    Text("Valores Actualizados (Frankfurter)", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Dólar: ${state.valorDolarCLP}", style = MaterialTheme.typography.headlineMedium)
+
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("🇨🇱 $ ${state.valorDolarEnClp} CLP", style = MaterialTheme.typography.headlineMedium)
+                    Text("Euro: ${state.valorEuroCLP}", style = MaterialTheme.typography.headlineMedium)
 
-                    Text("🇪🇺 € ${state.valorEuroEnUsd} EUR", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "(Precios referenciales en Pesos Chilenos)",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }

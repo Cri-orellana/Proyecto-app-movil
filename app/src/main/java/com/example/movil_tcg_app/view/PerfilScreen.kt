@@ -1,11 +1,10 @@
 package com.example.movil_tcg_app.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.EuroSymbol
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
@@ -17,10 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.movil_tcg_app.viewmodel.MonedaViewModel
-import com.example.movil_tcg_app.viewmodel.TipoMoneda
 import com.example.movil_tcg_app.viewmodel.UsuarioViewModel
 
 @Composable
@@ -69,15 +66,23 @@ fun PerfilScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Moneda de la Tienda", fontWeight = FontWeight.Bold)
+                    Text("Cotización del Día (API Frankfurter)", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Fila Dólar
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.AttachMoney, null, tint = Color.Green)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Dólar: ${monedaState.valorDolarCLP}")
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        BotonMoneda("CLP", TipoMoneda.CLP, monedaState.monedaSeleccionada, monedaViewModel)
-                        BotonMoneda("USD", TipoMoneda.USD, monedaState.monedaSeleccionada, monedaViewModel)
-                        BotonMoneda("EUR", TipoMoneda.EUR, monedaState.monedaSeleccionada, monedaViewModel)
+
+                    // Fila Euro
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.EuroSymbol, null, tint = Color.Blue)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Euro: ${monedaState.valorEuroCLP}")
                     }
                 }
             }
@@ -112,27 +117,10 @@ fun PerfilScreen(
 
         } else {
             Text("No hay sesión activa")
+            Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { navController.navigate(PantallaApp.Login.ruta) }) {
                 Text("Ir a Login")
             }
         }
-    }
-}
-
-@Composable
-fun BotonMoneda(
-    texto: String,
-    tipo: TipoMoneda,
-    seleccionada: TipoMoneda,
-    viewModel: MonedaViewModel
-) {
-    val esSeleccionada = tipo == seleccionada
-    Button(
-        onClick = { viewModel.cambiarMoneda(tipo) },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (esSeleccionada) MaterialTheme.colorScheme.primary else Color.LightGray
-        )
-    ) {
-        Text(texto)
     }
 }

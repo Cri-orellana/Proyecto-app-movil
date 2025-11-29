@@ -8,14 +8,11 @@ import java.util.concurrent.TimeUnit
 
 object ClienteRetrofit {
 
+    // IPs de tus servidores AWS
     private const val URL_TICKETS = "http://98.83.97.82:8080/"
-
     private const val URL_PRODUCTOS = "http://18.234.130.170:8081/"
-
     private const val URL_USUARIOS = "http://54.84.50.10:8082/"
-
     private const val URL_FRANKFURTER = "https://api.frankfurter.app/"
-
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -36,7 +33,6 @@ object ClienteRetrofit {
             .create(serviceClass)
     }
 
-
     val ticketService: TicketService by lazy {
         crearServicio(URL_TICKETS, TicketService::class.java)
     }
@@ -49,6 +45,7 @@ object ClienteRetrofit {
         crearServicio(URL_USUARIOS, UsuarioService::class.java)
     }
 
+    // AQUÍ UNIFICAMOS EL NOMBRE: frankfurterService
     val frankfurterService: FrankfurterService by lazy {
         crearServicio(URL_FRANKFURTER, FrankfurterService::class.java)
     }
