@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import com.example.movil_tcg_app.viewmodel.CarritoViewModel
+import com.example.movil_tcg_app.viewmodel.MonedaViewModel
 import com.example.movil_tcg_app.viewmodel.ProductoViewModel
 
 @Composable
@@ -31,12 +32,11 @@ fun LoadImageFromUrl(url: String?, imageLoader: ImageLoader, modifier: Modifier 
         placeholder = rememberVectorPainter(Icons.Default.Image),
         error = rememberVectorPainter(Icons.Default.BrokenImage)
     )
-}
-
-@Composable
+}@Composable
 fun ProductosScreen(
     productoViewModel: ProductoViewModel,
     carritoViewModel: CarritoViewModel?,
+    monedaViewModel: MonedaViewModel,
     imageLoader: ImageLoader,
     navController: NavController,
     franquicia: String?
@@ -47,6 +47,8 @@ fun ProductosScreen(
 
     val productos by productoViewModel.productos.collectAsState()
     val franchises by productoViewModel.franchises.collectAsState()
+
+    val monedaState by monedaViewModel.uiState.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -67,71 +69,69 @@ fun ProductosScreen(
                     Text(franchise.uppercase())
                 }
             }
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        }LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(productos) { producto ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+        items(productos) { producto ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
 
-                        LoadImageFromUrl(
-                            url = producto.urlImagen,
-                            imageLoader = imageLoader,
-                            modifier = Modifier
-                                .size(200.dp)
-                                .fillMaxWidth()
-                        )
+                    LoadImageFromUrl(
+                        url = producto.urlImagen,
+                        imageLoader = imageLoader,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .fillMaxWidth()
+                    )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(
-                            text = producto.nombreProduto,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Text(
+                        text = producto.nombreProduto,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                        Text(
-                            text = "${producto.franquicia} - ${producto.tipo}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
+                    Text(
+                        text = "${producto.franquicia} - ${producto.tipo}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(
-                            text = producto.descripcion,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    Text(
+                        text = producto.descripcion,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(
-                            text = "$ ${producto.precio}",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                    Text(
+                        text = monedaViewModel.formatearPrecio(producto.precio),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        Button(onClick = {
-                            if (carritoViewModel != null) {
-                                carritoViewModel.agregarAlCarrito(producto.productId ?: 0L)
-                            } else {
-                                navController.navigate(PantallaApp.Login.ruta)
-                            }
-                        }) {
-                            Text("Agregar al Carrito")
+                    Button(onClick = {
+                        if (carritoViewModel != null) {
+                            carritoViewModel.agregarAlCarrito(producto.productId ?: 0L)
+                        } else {
+                            navController.navigate(PantallaApp.Login.ruta)
                         }
+                    }) {
+                        Text("Agregar al Carrito")
                     }
                 }
             }
         }
+    }
     }
 }

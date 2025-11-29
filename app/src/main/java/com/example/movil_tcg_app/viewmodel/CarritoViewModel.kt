@@ -59,7 +59,6 @@ class CarritoViewModel(application: Application, private val usuarioEmail: Strin
             itemExistente.cantidad++
         } else {
             val productoReal = allProducts.find { it.productId == productoId }
-
             if (productoReal != null) {
                 carritoLocal.add(CarritoProducto(productoReal, 1))
             }
@@ -81,7 +80,6 @@ class CarritoViewModel(application: Application, private val usuarioEmail: Strin
 
     fun decrementarCantidad(productoId: Long) {
         val itemExistente = carritoLocal.find { it.producto.productId == productoId }
-
         if (itemExistente != null) {
             if (itemExistente.cantidad > 1) {
                 itemExistente.cantidad--

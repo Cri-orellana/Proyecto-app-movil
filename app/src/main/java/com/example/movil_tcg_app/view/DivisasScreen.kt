@@ -39,8 +39,10 @@ fun DivisasScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("1 USD =", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("🇨🇱 $ ${state.valorDolar} CLP", style = MaterialTheme.typography.headlineMedium)
-                    Text("🇪🇺 € ${state.valorEuro} EUR", style = MaterialTheme.typography.headlineMedium)
+
+                    Text("🇨🇱 $ ${state.valorDolarEnClp} CLP", style = MaterialTheme.typography.headlineMedium)
+
+                    Text("🇪🇺 € ${state.valorEuroEnUsd} EUR", style = MaterialTheme.typography.headlineMedium)
                 }
             }
         }

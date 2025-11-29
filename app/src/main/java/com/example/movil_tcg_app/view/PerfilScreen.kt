@@ -1,22 +1,14 @@
 package com.example.movil_tcg_app.view
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,14 +19,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.movil_tcg_app.viewmodel.MonedaViewModel
+import com.example.movil_tcg_app.viewmodel.TipoMoneda
 import com.example.movil_tcg_app.viewmodel.UsuarioViewModel
 
 @Composable
 fun PerfilScreen(
     viewModel: UsuarioViewModel,
+    monedaViewModel: MonedaViewModel,
     navController: NavController
 ) {
     val state by viewModel.state.collectAsState()
+    val monedaState by monedaViewModel.uiState.collectAsState()
     val usuario = state.loggedInUser
 
     Column(
@@ -68,6 +64,26 @@ fun PerfilScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Moneda de la Tienda", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        BotonMoneda("CLP", TipoMoneda.CLP, monedaState.monedaSeleccionada, monedaViewModel)
+                        BotonMoneda("USD", TipoMoneda.USD, monedaState.monedaSeleccionada, monedaViewModel)
+                        BotonMoneda("EUR", TipoMoneda.EUR, monedaState.monedaSeleccionada, monedaViewModel)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = { navController.navigate("tickets") },
                 modifier = Modifier.fillMaxWidth()
@@ -94,17 +110,29 @@ fun PerfilScreen(
                 Text("Cerrar Sesión")
             }
 
-            Button(onClick = { navController.navigate("divisas") }) {
-                Text("Ver Precio Dólar")
-            }
-
         } else {
             Text("No hay sesión activa")
             Button(onClick = { navController.navigate(PantallaApp.Login.ruta) }) {
                 Text("Ir a Login")
             }
         }
+    }
+}
 
-
+@Composable
+fun BotonMoneda(
+    texto: String,
+    tipo: TipoMoneda,
+    seleccionada: TipoMoneda,
+    viewModel: MonedaViewModel
+) {
+    val esSeleccionada = tipo == seleccionada
+    Button(
+        onClick = { viewModel.cambiarMoneda(tipo) },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (esSeleccionada) MaterialTheme.colorScheme.primary else Color.LightGray
+        )
+    ) {
+        Text(texto)
     }
 }

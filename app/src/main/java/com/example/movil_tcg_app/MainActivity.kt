@@ -18,22 +18,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.ImageLoader
-import com.example.movil_tcg_app.view.BarraNavegacionInferior
-import com.example.movil_tcg_app.view.BarraSuperior
-import com.example.movil_tcg_app.view.CarritoScreen
-import com.example.movil_tcg_app.view.ContactoScreen
-import com.example.movil_tcg_app.view.FormularioScreen
-import com.example.movil_tcg_app.view.LoginScreen
-import com.example.movil_tcg_app.view.NosotrosScreen
-import com.example.movil_tcg_app.view.PantallaApp
-import com.example.movil_tcg_app.view.PantallaInicio
-import com.example.movil_tcg_app.view.PerfilScreen
-import com.example.movil_tcg_app.view.ProductosScreen
-import com.example.movil_tcg_app.view.DivisasScreen
+import com.example.movil_tcg_app.view.*
+import com.example.movil_tcg_app.viewmodel.*
 import com.example.movil_tcg_app.view.TicketScreen
-import com.example.movil_tcg_app.viewmodel.CarritoViewModel
-import com.example.movil_tcg_app.viewmodel.ProductoViewModel
-import com.example.movil_tcg_app.viewmodel.UsuarioViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +33,8 @@ class MainActivity : ComponentActivity() {
 
             val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModel.Factory(app))
             val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModel.Factory(app))
+
+            val monedaViewModel: MonedaViewModel = viewModel()
 
             val imageLoader = ImageLoader.Builder(context).build()
 
@@ -63,7 +52,15 @@ class MainActivity : ComponentActivity() {
                     startDestination = PantallaApp.Inicio.ruta,
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    composable(PantallaApp.Inicio.ruta) { PantallaInicio(controladorNavegacion, productoViewModel, imageLoader) }
+                    composable(PantallaApp.Inicio.ruta) {
+                        PantallaInicio(
+                            navController = controladorNavegacion,
+                            productoViewModel = productoViewModel,
+                            monedaViewModel = monedaViewModel,
+                            imageLoader = imageLoader
+                        )
+                    }
+
                     composable(PantallaApp.Nosotros.ruta) { NosotrosScreen() }
                     composable(PantallaApp.Contacto.ruta) { ContactoScreen(controladorNavegacion) }
                     composable(PantallaApp.Login.ruta) { LoginScreen(controladorNavegacion, usuarioViewModel) }
@@ -80,14 +77,27 @@ class MainActivity : ComponentActivity() {
                         )
                     ) { backStackEntry ->
                         val franquicia = backStackEntry.arguments?.getString("franquicia")
-                        ProductosScreen(productoViewModel, carritoViewModel, imageLoader, controladorNavegacion, franquicia)
+                        ProductosScreen(
+                            productoViewModel,
+                            carritoViewModel,
+                            monedaViewModel, // <--- Conexión 2
+                            imageLoader,
+                            controladorNavegacion,
+                            franquicia
+                        )
                     }
 
                     composable(PantallaApp.Carrito.ruta) {
                         CarritoScreen(carritoViewModel, imageLoader)
                     }
 
-                    composable(PantallaApp.Perfil.ruta) { PerfilScreen(usuarioViewModel, controladorNavegacion) }
+                    composable(PantallaApp.Perfil.ruta) {
+                        PerfilScreen(
+                            usuarioViewModel,
+                            monedaViewModel, // <--- Conexión 3
+                            controladorNavegacion
+                        )
+                    }
 
                     composable("tickets") {
                         TicketScreen(navController = controladorNavegacion)
