@@ -8,11 +8,14 @@ import java.util.concurrent.TimeUnit
 
 object ClienteRetrofit {
 
-    private const val IP_BASE = "10.0.2.2"
-    private const val URL_TICKETS = "http://$IP_BASE:8080/"
-    private const val URL_PRODUCTOS = "http://$IP_BASE:8081/"
-    private const val URL_USUARIOS = "http://$IP_BASE:8082/"
+    private const val URL_TICKETS = "http://98.83.97.82:8080/"
+
+    private const val URL_PRODUCTOS = "http://18.234.130.170:8081/"
+
+    private const val URL_USUARIOS = "http://54.84.50.10:8082/"
+
     private const val URL_FRANKFURTER = "https://api.frankfurter.app/"
+
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -33,9 +36,18 @@ object ClienteRetrofit {
             .create(serviceClass)
     }
 
-    val ticketService: TicketService by lazy { crearServicio(URL_TICKETS, TicketService::class.java) }
-    val productoService: ProductoService by lazy { crearServicio(URL_PRODUCTOS, ProductoService::class.java) }
-    val usuarioService: UsuarioService by lazy { crearServicio(URL_USUARIOS, UsuarioService::class.java) }
+
+    val ticketService: TicketService by lazy {
+        crearServicio(URL_TICKETS, TicketService::class.java)
+    }
+
+    val productoService: ProductoService by lazy {
+        crearServicio(URL_PRODUCTOS, ProductoService::class.java)
+    }
+
+    val usuarioService: UsuarioService by lazy {
+        crearServicio(URL_USUARIOS, UsuarioService::class.java)
+    }
 
     val frankfurterService: FrankfurterService by lazy {
         crearServicio(URL_FRANKFURTER, FrankfurterService::class.java)
