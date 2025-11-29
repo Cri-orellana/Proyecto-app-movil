@@ -37,20 +37,14 @@ fun DivisasScreen(
                 modifier = Modifier.fillMaxWidth().padding(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Valores Actualizados (Frankfurter)", style = MaterialTheme.typography.titleLarge)
+                    Text("Valores Base (Frankfurter)", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Dólar: ${state.valorDolarCLP}", style = MaterialTheme.typography.headlineMedium)
+                    Text("Dólar: $ ${state.valorDolarEnClp}", style = MaterialTheme.typography.headlineMedium)
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("Euro: ${state.valorEuroCLP}", style = MaterialTheme.typography.headlineMedium)
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "(Precios referenciales en Pesos Chilenos)",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text("1 USD = ${state.valorEuroEnUsd} EUR", style = MaterialTheme.typography.headlineMedium)
                 }
             }
         }

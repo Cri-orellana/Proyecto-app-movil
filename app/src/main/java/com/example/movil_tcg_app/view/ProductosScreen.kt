@@ -23,6 +23,7 @@ import coil.compose.AsyncImage
 import com.example.movil_tcg_app.R
 import com.example.movil_tcg_app.viewmodel.CarritoViewModel
 import com.example.movil_tcg_app.viewmodel.ProductoViewModel
+import com.example.movil_tcg_app.viewmodel.MonedaViewModel
 
 @Composable
 fun LoadImageProducts(url: String?, imageLoader: ImageLoader, modifier: Modifier = Modifier) {
@@ -41,6 +42,7 @@ fun LoadImageProducts(url: String?, imageLoader: ImageLoader, modifier: Modifier
 fun ProductosScreen(
     productoViewModel: ProductoViewModel,
     carritoViewModel: CarritoViewModel?,
+    monedaViewModel: MonedaViewModel,
     imageLoader: ImageLoader,
     navController: NavController,
     franquicia: String?
@@ -52,46 +54,33 @@ fun ProductosScreen(
     val productos by productoViewModel.productos.collectAsState()
     val franchises by productoViewModel.franchises.collectAsState()
 
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
                 Button(onClick = {
-                    navController.navigate(PantallaApp.Productos.rutaSinFiltro) {
-                        launchSingleTop = true
-                    }
-                }) {
-                    Text("Todos")
-                }
+                    navController.navigate(PantallaApp.Productos.rutaSinFiltro) { launchSingleTop = true }
+                }) { Text("Todos") }
             }
-
             items(franchises) { franchise ->
                 Button(onClick = {
-                    navController.navigate(PantallaApp.Productos.conFranquicia(franchise)) {
-                        launchSingleTop = true
-                    }
-                }) {
-                    Text(franchise)
-                }
+                    navController.navigate(PantallaApp.Productos.conFranquicia(franchise)) { launchSingleTop = true }
+                }) { Text(franchise) }
             }
         }
 
-        // --- LISTA ---
         if (productos.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("No hay productos disponibles")
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
@@ -105,36 +94,19 @@ fun ProductosScreen(
                             LoadImageProducts(
                                 url = producto.urlImagen,
                                 imageLoader = imageLoader,
-                                modifier = Modifier
-                                    .height(200.dp)
-                                    .fillMaxWidth()
+                                modifier = Modifier.height(200.dp).fillMaxWidth()
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            Text(
-                                text = producto.nombreProduto,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = "${producto.franquicia} - ${producto.tipo}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-
+                            Text(text = producto.nombreProduto, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Text(text = "${producto.franquicia} - ${producto.tipo}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                             Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = producto.descripcion,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-
+                            Text(text = producto.descripcion, style = MaterialTheme.typography.bodyMedium)
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "$ ${producto.precio}",
+                                text = monedaViewModel.convertirPrecio(producto.precio),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.primary

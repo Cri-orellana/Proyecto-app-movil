@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.EuroSymbol
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -61,11 +62,13 @@ fun PantallaInicio(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.pikachu_fondo), // O el nombre de tu logo principal
+            painter = painterResource(id = R.drawable.tcg_logo),
             contentDescription = "Logo",
-            modifier = Modifier.height(100.dp),
+            modifier = Modifier.size(100.dp),
             contentScale = ContentScale.Fit
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -78,10 +81,10 @@ fun PantallaInicio(
             ) {
                 // Dolar
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Dólar (USD)", style = MaterialTheme.typography.labelSmall)
+                    Text("Dólar (CLP)", style = MaterialTheme.typography.labelSmall)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AttachMoney, null, modifier = Modifier.size(16.dp), tint = Color.Green)
-                        Text(estadoMoneda.valorDolarCLP, fontWeight = FontWeight.Bold)
+                        Text("${estadoMoneda.valorDolarEnClp.toInt()}", fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -89,23 +92,22 @@ fun PantallaInicio(
 
                 // Euro
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Euro (EUR)", style = MaterialTheme.typography.labelSmall)
+                    Text("Euro (vs USD)", style = MaterialTheme.typography.labelSmall)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.EuroSymbol, null, modifier = Modifier.size(16.dp), tint = Color.Blue)
-                        Text(estadoMoneda.valorEuroCLP, fontWeight = FontWeight.Bold)
+                        Text("${estadoMoneda.valorEuroEnUsd}", fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
         Text("Franquicias", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
-
             BotonFranquicia(navController, "yugioh", "Yu-Gi-Oh!", R.drawable.yugioh_logo)
             BotonFranquicia(navController, "magic", "Magic", R.drawable.magic_logo)
             BotonFranquicia(navController, "pokemon", "Pokemon", R.drawable.pokemon_logo)
@@ -119,7 +121,7 @@ fun PantallaInicio(
 
         if (productosDestacados.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                Text("Cargando...", color = Color.Gray)
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

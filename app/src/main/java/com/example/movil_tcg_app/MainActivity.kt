@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
                         ProductosScreen(
                             productoViewModel = productoViewModel,
                             carritoViewModel = carritoViewModel,
+                            monedaViewModel = monedaViewModel,
                             imageLoader = imageLoader,
                             navController = controladorNavegacion,
                             franquicia = franquicia
