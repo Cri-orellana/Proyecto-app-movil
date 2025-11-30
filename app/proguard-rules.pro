@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# 1. Evitar que R8/ProGuard cambie los nombres de tus modelos
+-keep class com.example.movil_tcg_app.model.** { *; }
+
+# 2. Reglas necesarias para Retrofit y Gson
+-keepattributes Signature
+-keepattributes Exceptions
+-keepattributes *Annotation*
+
+-dontwarn okio.**
+-dontwarn javax.annotation.**

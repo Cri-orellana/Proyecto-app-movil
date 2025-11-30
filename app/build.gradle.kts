@@ -17,6 +17,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file("tcg_keystore.jks")
+            storePassword = "Tcgfirma2025"
+            keyAlias = "tcg_key"
+            keyPassword = "Tcgfirma2025"
+        }
+    }
 
     buildTypes {
         release {
@@ -25,6 +33,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
