@@ -38,6 +38,14 @@ class Repositorio {
         return apiProductos.obtenerTodosLosProductos()
     }
 
+    suspend fun crearProducto(producto: ProductoApi): Response<ProductoApi> {
+        return apiProductos.crearProducto(producto)
+    }
+
+    suspend fun eliminarProducto(id: Long): Response<Void> {
+        return apiProductos.eliminarProducto(id)
+    }
+
     suspend fun obtenerDivisas(base: String, destino: String): Response<MonedaApi> {
         return apiMonedas.obtenerCambio(base, destino)
     }

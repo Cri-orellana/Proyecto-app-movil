@@ -20,12 +20,16 @@ sealed class PantallaApp(
     object Carrito : PantallaApp("carrito", "Carrito", Icons.Default.ShoppingCart)
     object Perfil : PantallaApp("perfil", "Perfil", Icons.Default.AccountCircle)
 
+    object AdminPanel : PantallaApp("admin_panel")
+    object AgregarProducto : PantallaApp("agregar_producto")
+
+    object BorrarProducto : PantallaApp("borrar_producto")
+    object AdminTickets : PantallaApp("admin_tickets")
+
     object Productos : PantallaApp("productos?franquicia={franquicia}", "Productos", Icons.Default.List) {
         fun conFranquicia(franquicia: String): String {
             return "productos?franquicia=$franquicia"
         }
         const val rutaSinFiltro: String = "productos"
     }
-
-    object AdminPanel : PantallaApp("admin_panel")
 }

@@ -13,11 +13,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class ProductoUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val mensajeExito: String? = null
+)
 
 class ProductoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repositorio = Repositorio()
+
+    private val _uiState = MutableStateFlow(ProductoUiState())
+    val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
 
     private val _allProductos = MutableStateFlow<List<ProductoApi>>(emptyList())
     private val _selectedFranchise = MutableStateFlow<String?>(null)
@@ -47,22 +57,57 @@ class ProductoViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try {
                 val respuesta = repositorio.obtenerProductos()
-
                 if (respuesta.isSuccessful) {
                     val listaRemota = respuesta.body() ?: emptyList()
                     _allProductos.value = listaRemota
                     _productosDestacados.value = listaRemota.take(5)
-                } else {
-                    println("Error al obtener productos: ${respuesta.code()}")
                 }
             } catch (e: Exception) {
-                println("Error de conexión: ${e.message}")
+                println("Error: ${e.message}")
             }
         }
     }
 
     fun selectFranchise(franquicia: String?) {
         _selectedFranchise.value = franquicia
+    }
+
+    fun crearProducto(nuevoProducto: ProductoApi) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null, mensajeExito = null) }
+            try {
+                val respuesta = repositorio.crearProducto(nuevoProducto)
+                if (respuesta.isSuccessful) {
+                    _uiState.update { it.copy(isLoading = false, mensajeExito = "Producto creado correctamente") }
+                    cargarProductosDesdeApi()
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "Error al crear: ${respuesta.code()}") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun eliminarProducto(id: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val respuesta = repositorio.eliminarProducto(id)
+                if (respuesta.isSuccessful) {
+                    cargarProductosDesdeApi()
+                    _uiState.update { it.copy(isLoading = false, mensajeExito = "Producto eliminado") }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo eliminar") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun limpiarEstados() {
+        _uiState.update { ProductoUiState() }
     }
 
     class Factory(private val app: Application) : ViewModelProvider.Factory {
