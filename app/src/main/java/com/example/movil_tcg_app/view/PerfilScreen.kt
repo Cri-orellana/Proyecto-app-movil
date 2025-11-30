@@ -27,6 +27,8 @@ fun PerfilScreen(
     val monedaState by monedaViewModel.uiState.collectAsState()
     val usuario = state.loggedInUser
 
+    val listaAdmins = listOf("cris@tienda.cl", "nacho@tienda.cl")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -76,6 +78,20 @@ fun PerfilScreen(
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
+                }
+            }
+
+            if (listaAdmins.contains(usuario.correo)) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { navController.navigate(PantallaApp.AdminPanel.ruta) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Icon(Icons.Default.Security, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text("Panel de Administrador", color = Color.White)
                 }
             }
 

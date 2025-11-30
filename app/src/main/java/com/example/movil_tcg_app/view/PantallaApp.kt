@@ -26,4 +26,6 @@ sealed class PantallaApp(
         }
         const val rutaSinFiltro: String = "productos"
     }
+
+    object AdminPanel : PantallaApp("admin_panel")
 }

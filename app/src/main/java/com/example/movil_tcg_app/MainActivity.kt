@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val app = context.applicationContext as Application
 
-            // ViewModels
             val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModel.Factory(app))
             val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModel.Factory(app))
             val monedaViewModel: MonedaViewModel = viewModel()
@@ -61,12 +60,13 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // --- PANTALLAS SIMPLES ---
                     composable(PantallaApp.Nosotros.ruta) { NosotrosScreen() }
                     composable(PantallaApp.Contacto.ruta) { ContactoScreen(controladorNavegacion) }
                     composable(PantallaApp.Login.ruta) { LoginScreen(controladorNavegacion, usuarioViewModel) }
                     composable(PantallaApp.Registro.ruta) { FormularioScreen(controladorNavegacion, usuarioViewModel) }
-
+                    composable(PantallaApp.AdminPanel.ruta) {
+                        AdminScreen(controladorNavegacion)
+                    }
                     composable(
                         route = "productos?franquicia={franquicia}",
                         arguments = listOf(

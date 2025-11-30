@@ -79,7 +79,6 @@ fun PantallaInicio(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Dolar
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Dólar (CLP)", style = MaterialTheme.typography.labelSmall)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -90,7 +89,6 @@ fun PantallaInicio(
 
                 Divider(modifier = Modifier.height(30.dp).width(1.dp))
 
-                // Euro
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Euro (vs USD)", style = MaterialTheme.typography.labelSmall)
                     Row(verticalAlignment = Alignment.CenterVertically) {
