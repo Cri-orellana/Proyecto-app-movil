@@ -22,6 +22,10 @@ class Repositorio {
         return apiTickets.crearTicket(ticket)
     }
 
+    suspend fun actualizarTicket(id: Int, ticket: TicketApi): Response<TicketApi> {
+        return apiTickets.actualizarTicket(id, ticket)
+    }
+
     suspend fun eliminarTicket(id: Int): Response<Void> {
         return apiTickets.eliminarTicket(id)
     }
@@ -40,6 +44,10 @@ class Repositorio {
 
     suspend fun crearProducto(producto: ProductoApi): Response<ProductoApi> {
         return apiProductos.crearProducto(producto)
+    }
+
+    suspend fun actualizarProducto(id: Long, producto: ProductoApi): Response<ProductoApi> {
+        return apiProductos.actualizarProducto(id, producto)
     }
 
     suspend fun eliminarProducto(id: Long): Response<Void> {

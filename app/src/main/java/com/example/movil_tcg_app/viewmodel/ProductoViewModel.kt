@@ -72,6 +72,10 @@ class ProductoViewModel(application: Application) : AndroidViewModel(application
         _selectedFranchise.value = franquicia
     }
 
+    fun obtenerProductoPorIdLocal(id: Long): ProductoApi? {
+        return _allProductos.value.find { it.productId == id }
+    }
+
     fun crearProducto(nuevoProducto: ProductoApi) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, mensajeExito = null) }
@@ -82,6 +86,23 @@ class ProductoViewModel(application: Application) : AndroidViewModel(application
                     cargarProductosDesdeApi()
                 } else {
                     _uiState.update { it.copy(isLoading = false, error = "Error al crear: ${respuesta.code()}") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun actualizarProducto(id: Long, productoActualizado: ProductoApi) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null, mensajeExito = null) }
+            try {
+                val respuesta = repositorio.actualizarProducto(id, productoActualizado)
+                if (respuesta.isSuccessful) {
+                    _uiState.update { it.copy(isLoading = false, mensajeExito = "Producto actualizado correctamente") }
+                    cargarProductosDesdeApi() // Recargar la lista
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "Error al actualizar: ${respuesta.code()}") }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

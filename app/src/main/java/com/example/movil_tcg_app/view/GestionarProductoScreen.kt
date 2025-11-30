@@ -6,7 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +22,7 @@ import com.example.movil_tcg_app.viewmodel.ProductoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BorrarProductoScreen(
+fun GestionarProductosScreen(
     navController: NavController,
     viewModel: ProductoViewModel,
     imageLoader: ImageLoader
@@ -40,13 +41,13 @@ fun BorrarProductoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Eliminar Productos") },
+                title = { Text("Gestionar Productos") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             )
         }
     ) { padding ->
@@ -67,7 +68,7 @@ fun BorrarProductoScreen(
                                 .padding(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            LoadImageProducts(url = producto.urlImagen, imageLoader = imageLoader, modifier = Modifier.size(60.dp))
+                            LoadImageProducts(url = producto.urlImagen, imageLoader = imageLoader, modifier = Modifier.size(50.dp))
 
                             Spacer(modifier = Modifier.width(12.dp))
 
@@ -79,10 +80,20 @@ fun BorrarProductoScreen(
 
                             IconButton(
                                 onClick = {
+                                    producto.productId?.let { id ->
+                                        navController.navigate(PantallaApp.EditarProducto.createRoute(id))
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color.Blue)
+                            }
+
+                            IconButton(
+                                onClick = {
                                     producto.productId?.let { id -> viewModel.eliminarProducto(id) }
                                 }
                             ) {
-                                Icon(Icons.Default.DeleteForever, contentDescription = "Borrar", tint = Color.Red)
+                                Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
                             }
                         }
                     }

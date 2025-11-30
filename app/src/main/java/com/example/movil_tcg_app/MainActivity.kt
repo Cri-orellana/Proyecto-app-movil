@@ -27,7 +27,7 @@ import coil.ImageLoader
 import com.example.movil_tcg_app.view.*
 import com.example.movil_tcg_app.viewmodel.*
 import com.example.movil_tcg_app.view.TicketScreen
-
+import com.example.movil_tcg_app.view.AdminTicketsScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,21 +122,31 @@ class MainActivity : ComponentActivity() {
                         AgregarProductoScreen(controladorNavegacion, productoViewModel)
                     }
 
-                    composable(PantallaApp.BorrarProducto.ruta) {
-                        BorrarProductoScreen(
+                    composable(PantallaApp.GestionarProductos.ruta) {
+                        GestionarProductosScreen(
                             navController = controladorNavegacion,
                             viewModel = productoViewModel,
                             imageLoader = imageLoader
                         )
                     }
 
+                    composable(
+                        route = PantallaApp.EditarProducto.ruta,
+                        arguments = listOf(navArgument("id") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val productoId = backStackEntry.arguments?.getLong("id") ?: 0L
+                        EditarProductoScreen(
+                            navController = controladorNavegacion,
+                            viewModel = productoViewModel,
+                            productoId = productoId
+                        )
+                    }
+
                     composable(PantallaApp.AdminTickets.ruta) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Pantalla de Gestión de Tickets (En construcción)")
-                            Button(onClick = { controladorNavegacion.popBackStack() }, modifier = Modifier.padding(top=32.dp)) {
-                                Text("Volver")
-                            }
-                        }
+                        AdminTicketsScreen(
+                            navController = controladorNavegacion,
+                            viewModel = viewModel()
+                        )
                     }
                 }
             }

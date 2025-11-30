@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +28,7 @@ fun AdminScreen(navController: NavController) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Red)
             )
         }
     ) { padding ->
@@ -42,19 +43,20 @@ fun AdminScreen(navController: NavController) {
             Text(
                 text = "Herramientas de Gestión",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Red
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { navController.navigate(PantallaApp.BorrarProducto.ruta) },
+                onClick = { navController.navigate(PantallaApp.GestionarProductos.ruta) },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) // Rojo
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Icon(Icons.Default.Delete, contentDescription = null)
+                Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White)
                 Spacer(Modifier.width(8.dp))
-                Text("Eliminar Productos")
+                Text("Gestionar Productos", color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -62,11 +64,11 @@ fun AdminScreen(navController: NavController) {
             Button(
                 onClick = { navController.navigate(PantallaApp.AgregarProducto.ruta) },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) // Azul/Morado
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Icon(Icons.Default.AddCircle, contentDescription = null)
+                Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.White)
                 Spacer(Modifier.width(8.dp))
-                Text("Agregar Nuevo Producto")
+                Text("Agregar Nuevo Producto", color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -74,11 +76,11 @@ fun AdminScreen(navController: NavController) {
             Button(
                 onClick = { navController.navigate(PantallaApp.AdminTickets.ruta) },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Icon(Icons.Default.List, contentDescription = null)
+                Icon(Icons.Default.List, contentDescription = null, tint = Color.White)
                 Spacer(Modifier.width(8.dp))
-                Text("Gestionar Tickets (Admin)")
+                Text("Gestionar Tickets", color = Color.White)
             }
         }
     }

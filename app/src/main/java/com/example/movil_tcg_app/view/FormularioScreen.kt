@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -93,7 +94,11 @@ fun FormularioScreen(
             Button(
                 onClick = { viewModel.register() },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = state.formTermsAccepted
+                enabled = state.formTermsAccepted,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    disabledContainerColor = Color.Red.copy(alpha = 0.5f)
+                )
             ){
                 Text("Registrar")
             }

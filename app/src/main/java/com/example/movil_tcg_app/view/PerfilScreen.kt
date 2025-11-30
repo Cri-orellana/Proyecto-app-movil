@@ -87,7 +87,7 @@ fun PerfilScreen(
                 Button(
                     onClick = { navController.navigate(PantallaApp.AdminPanel.ruta) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Icon(Icons.Default.Security, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.size(8.dp))
@@ -99,7 +99,8 @@ fun PerfilScreen(
 
             Button(
                 onClick = { navController.navigate("tickets") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
                 Icon(Icons.Default.List, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))

@@ -23,8 +23,12 @@ sealed class PantallaApp(
     object AdminPanel : PantallaApp("admin_panel")
     object AgregarProducto : PantallaApp("agregar_producto")
 
-    object BorrarProducto : PantallaApp("borrar_producto")
+    object GestionarProductos : PantallaApp("gestionar_productos")
     object AdminTickets : PantallaApp("admin_tickets")
+
+    object EditarProducto : PantallaApp("editar_producto/{id}") {
+        fun createRoute(id: Long) = "editar_producto/$id"
+    }
 
     object Productos : PantallaApp("productos?franquicia={franquicia}", "Productos", Icons.Default.List) {
         fun conFranquicia(franquicia: String): String {

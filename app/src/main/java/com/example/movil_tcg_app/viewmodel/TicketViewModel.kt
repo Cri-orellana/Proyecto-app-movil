@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 data class TicketUiState(
     val tickets: List<TicketApi> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val mensajeExito: String? = null
 )
 
 class TicketViewModel : ViewModel() {
@@ -22,6 +23,10 @@ class TicketViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(TicketUiState())
     val uiState: StateFlow<TicketUiState> = _uiState.asStateFlow()
+
+    init {
+        obtenerTickets()
+    }
 
     fun obtenerTickets() {
         viewModelScope.launch {
@@ -49,6 +54,7 @@ class TicketViewModel : ViewModel() {
                 val respuesta = repositorio.crearTicket(nuevoTicket)
                 if (respuesta.isSuccessful) {
                     obtenerTickets()
+                    _uiState.update { it.copy(mensajeExito = "Ticket creado correctamente") }
                 } else {
                     _uiState.update { it.copy(isLoading = false, error = "No se pudo crear el ticket") }
                 }
@@ -58,7 +64,55 @@ class TicketViewModel : ViewModel() {
         }
     }
 
-    fun limpiarError() {
-        _uiState.update { it.copy(error = null) }
+    fun responderTicket(ticketOriginal: TicketApi, nuevoEstado: String, respuestaAdmin: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val nuevaDescripcion = if (respuestaAdmin.isNotBlank()) {
+                "${ticketOriginal.descripcion}\n\n[RESPUESTA ADMIN]: $respuestaAdmin"
+            } else {
+                ticketOriginal.descripcion
+            }
+
+            val ticketActualizado = ticketOriginal.copy(
+                estado = nuevoEstado,
+                descripcion = nuevaDescripcion
+            )
+
+            try {
+                val id = ticketOriginal.id ?: return@launch
+
+                val respuesta = repositorio.actualizarTicket(id, ticketActualizado)
+                if (respuesta.isSuccessful) {
+                    obtenerTickets()
+                    _uiState.update { it.copy(mensajeExito = "Ticket actualizado") }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "Error al actualizar") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun eliminarTicket(id: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val respuesta = repositorio.eliminarTicket(id)
+                if (respuesta.isSuccessful) {
+                    obtenerTickets()
+                    _uiState.update { it.copy(mensajeExito = "Ticket eliminado") }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo eliminar") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun limpiarMensajes() {
+        _uiState.update { it.copy(error = null, mensajeExito = null) }
     }
 }
